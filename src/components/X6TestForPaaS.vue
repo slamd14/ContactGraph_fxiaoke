@@ -128,7 +128,7 @@ export default {
       const edges = this.graph.getEdges()
       const g = new dagreD3.dagre.graphlib.Graph()
       let that = this
-      g.setGraph({ rankdir: that.dir, nodesep: 50, ranksep: 50 })
+      g.setGraph({ rankdir: that.dir, nodesep: 50, ranksep: 50 }) // nodesep: 节点之间横向连线长度 rankesep: 节点之间纵向距离长度
       g.setDefaultEdgeLabel(() => ({}))
 
       const width = 260
@@ -258,8 +258,8 @@ export default {
                 ry: 10,
                 refWidth: '100%',
                 refHeight: '100%',
-                fill: '#5F95FF',
-                stroke: '#5F95FF',
+                fill: '#d86500',
+                stroke: '#d86500',
                 strokeWidth: 1,
                 pointerEvents: 'visiblePainted',
                 cursor: 'pointer'
@@ -317,6 +317,7 @@ export default {
             data: {
               contactId: '', // 联系人id
               gender: '', // 联系人性别
+              contactAllData: {} // 该联系人所有数据, 方便日后拓展
             }
           },
           true,
@@ -344,6 +345,7 @@ export default {
     mouseEnterListener() {
       this.graph.on('node:click', ({ e, x, y, cell, view }) => {
         // console.log('当前点击的联系人的id为: ', cell['data']['contactId'])
+        console.log('当前点击的联系人的所有数据为: ', cell['data']['contactAllData'])
         FxUI.objectUIAction.viewObject('ContactObj', cell['data']['contactId'])
       })
     },
@@ -363,12 +365,13 @@ export default {
         console.log('点击加号')
       })
     },
-    createNode(rank, name, contactId, gender) {
+    // 创建节点
+    createNode(rank, name, contactId, gender, contactAllData) {
       let that = this
       return this.graph.createNode({
         shape: 'org-node',
         attrs: {
-          '.image': { xlinkHref: gender === 1 ? that.male : that.female },
+          '.image': { xlinkHref: gender === '1' ? that.male : that.female },
           '.rank': {
             text: that.Dom.breakText(rank, { width: 160, height: 45 }),
           },
@@ -378,16 +381,26 @@ export default {
         },
         data: {
           'contactId': contactId,
-          'gender': gender === 1 ? '男' : '女'
+          'gender': gender === '1' ? '男' : '女',
+          'contactAllData': contactAllData
         }
       })
     },
+    // 创建边
     createEdge(source, target) {
       return this.graph.createEdge({
         shape: 'org-edge',
         source: { cell: source.id },
         target: { cell: target.id },
       })
+    },
+    // 返回id为introducerId的节点
+    getNodeByIntroducerId(introducerId) {
+      for (let node of this.nodes) {
+        let curContactId = node['data']['contactId']
+        if (curContactId === introducerId)
+          return node
+      }
     },
     // 绘图
     draw() {
@@ -415,14 +428,26 @@ export default {
       // TODO 构建联系人节点
       // TODO 构建联系人关系
       for (let contact of this.rawObjData) {
-        this.nodes.push(this.createNode('层级x', contact['name'], contact['_id'], contact['gender']))
+        this.nodes.push(this.createNode('层级x', contact['name'], contact['_id'], contact['gender'], contact))
       }
 
-      this.edges.push(this.createEdge(this.nodes[0], this.nodes[1]))
-      this.edges.push(this.createEdge(this.nodes[1], this.nodes[2]))
-      this.edges.push(this.createEdge(this.nodes[1], this.nodes[3]))
-      this.edges.push(this.createEdge(this.nodes[1], this.nodes[4]))
-      this.edges.push(this.createEdge(this.nodes[1], this.nodes[5]))
+      console.log('当前各个节点为: ', this.nodes)
+
+      for (let node of this.nodes) {
+        let curIntroducer = (node['data']['contactAllData']['introducer'] == null) ? '' : node['data']['contactAllData']['introducer']
+        if (curIntroducer === '') {
+          // 无介绍人
+          continue
+        }
+        let parentNode = this.getNodeByIntroducerId(curIntroducer)
+        this.edges.push(this.createEdge(parentNode, node))
+      }
+
+      // this.edges.push(this.createEdge(this.nodes[0], this.nodes[1]))
+      // this.edges.push(this.createEdge(this.nodes[1], this.nodes[2]))
+      // this.edges.push(this.createEdge(this.nodes[1], this.nodes[3]))
+      // this.edges.push(this.createEdge(this.nodes[1], this.nodes[4]))
+      // this.edges.push(this.createEdge(this.nodes[1], this.nodes[5]))
 
       // const nodes = [
       //   this.createNode('Founder & Chairman', 'Pierre Omidyar', this.male),
