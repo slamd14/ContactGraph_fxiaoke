@@ -1,5 +1,6 @@
 <template>
   <div class="test">
+    <div class="describe">联系人之间的关系线代表介绍关系</div>
     <!-- 页面加载进度条 -->
     <div class="loading_bg">
       <div class="jiazai_div">
@@ -269,8 +270,8 @@ export default {
                 refX: 0.95,
                 refY: 0.5,
                 fill: '#fff',
-                fontFamily: 'Courier New',
-                fontSize: 13,
+                fontFamily: 'Arial',
+                fontSize: 16,
                 textAnchor: 'end',
                 textVerticalAnchor: 'middle',
                 cursor: 'pointer'
@@ -423,7 +424,7 @@ export default {
         width: 1600,
         height: 800,
         background: {
-          color: '#F2F7FA'
+          color: '#fff8f8'
         },
         interacting: false,
         panning: true, // 画布平移
@@ -461,6 +462,11 @@ export default {
 </script>
 
 <style scoped>
+.describe {
+  padding-top: 20px;
+  margin: 0 10px 10px 20px;
+  font-size: 20px;
+}
 /* 加载等待 */
 
 /*.loading_bg {*/
