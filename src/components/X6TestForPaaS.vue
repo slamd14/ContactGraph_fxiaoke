@@ -260,9 +260,9 @@ export default {
               },
               '.image': {
                 x: 16,
-                y: 16,
-                width: 56,
-                height: 56,
+                y: 8,
+                width: 72,
+                height: 72,
                 opacity: 0.7,
                 cursor: 'pointer'
               },
@@ -376,25 +376,58 @@ export default {
       })
     },
     // 创建节点
-    createNode(department, name, contactId, gender, contactAllData) {
+    async createNode(department, name, contactId, gender, contactAllData) {
       let that = this
-      return this.graph.createNode({
-        shape: 'org-node',
-        attrs: {
-          '.image': { xlinkHref: gender === '1' ? that.male : that.female },
-          '.department': {
-            text: that.Dom.breakText('部门: ' + department, { width: 160, height: 45 }),
+      let resultNode = {}
+      // 名片npath
+      let cardNpath = contactAllData['card'].length === 0 ? '' : contactAllData['card'][0]['path']
+      if (cardNpath === '') {
+        resultNode = this.graph.createNode({
+          shape: 'org-node',
+          attrs: {
+            '.image': { xlinkHref: gender === '1' ? that.male : that.female },
+            '.department': {
+              text: that.Dom.breakText('部门: ' + department, { width: 160, height: 45 }),
+            },
+            '.name': {
+              text: that.Dom.breakText('姓名: ' + name, { width: 160, height: 45 }),
+            },
           },
-          '.name': {
-            text: that.Dom.breakText('姓名: ' + name, { width: 160, height: 45 }),
-          },
-        },
-        data: {
-          'contactId': contactId,
-          'gender': gender === '1' ? '男' : '女',
-          'contactAllData': contactAllData
-        }
-      })
+          data: {
+            'contactId': contactId,
+            'gender': gender === '1' ? '男' : '女',
+            'contactAllData': contactAllData
+          }
+        })
+      } else {
+        // 调用自定义控制器获取一个名片临时url
+        let parameters = [{type: 'string', name: 'fileNpath', value: cardNpath}]
+        await FxUI.userDefine.call_controller('getUrlByNpath__c', parameters).then((res) => {
+          let that2 = that
+          if (res.Result.StatusCode === 0) {
+            let fileUrl = res['Value']['functionResult'][0]['url']
+            console.log('附件url', fileUrl)
+            resultNode = that2.graph.createNode({
+              shape: 'org-node',
+              attrs: {
+                '.image': { xlinkHref: fileUrl },
+                '.department': {
+                  text: that2.Dom.breakText('部门: ' + department, { width: 160, height: 45 }),
+                },
+                '.name': {
+                  text: that2.Dom.breakText('姓名: ' + name, { width: 160, height: 45 }),
+                },
+              },
+              data: {
+                'contactId': contactId,
+                'gender': gender === '1' ? '男' : '女',
+                'contactAllData': contactAllData
+              }
+            })
+          }
+        })
+      }
+      return resultNode
     },
     // 创建边
     createEdge(source, target) {
@@ -413,7 +446,7 @@ export default {
       }
     },
     // 绘图
-    draw() {
+    async draw() {
       // 注册节点样式
       this.registerNode()
       // 注册边样式
@@ -435,9 +468,10 @@ export default {
       })
 
       for (let contact of this.rawObjData) {
-        this.nodes.push(this.createNode(contact['department'], contact['name'], contact['_id'], contact['gender'], contact))
+        let node = await this.createNode(contact['department'] == null ? '' : contact['department'], contact['name'], contact['_id'], contact['gender'], contact) // 调用自定义控制器发送了网络请求，所以createNode为一个异步方法, 应该用await阻塞在这里
+        console.log('当前节点为: ', node)
+        this.nodes.push(node)
       }
-
       console.log('当前各个节点为: ', this.nodes)
 
       // 依据介绍人构建节点上下级关系
