@@ -315,7 +315,8 @@ export default {
               },
             },
             data: {
-              contactId: '' // 联系人id
+              contactId: '', // 联系人id
+              gender: '', // 联系人性别
             }
           },
           true,
@@ -362,12 +363,12 @@ export default {
         console.log('点击加号')
       })
     },
-    createNode(rank, name, image, contactId) {
+    createNode(rank, name, contactId, gender) {
       let that = this
       return this.graph.createNode({
         shape: 'org-node',
         attrs: {
-          '.image': { xlinkHref: image },
+          '.image': { xlinkHref: gender === 1 ? that.male : that.female },
           '.rank': {
             text: that.Dom.breakText(rank, { width: 160, height: 45 }),
           },
@@ -376,7 +377,8 @@ export default {
           },
         },
         data: {
-          'contactId': contactId
+          'contactId': contactId,
+          'gender': gender === 1 ? '男' : '女'
         }
       })
     },
@@ -413,7 +415,7 @@ export default {
       // TODO 构建联系人节点
       // TODO 构建联系人关系
       for (let contact of this.rawObjData) {
-        this.nodes.push(this.createNode('层级x', contact['name'], this.male, contact['_id']))
+        this.nodes.push(this.createNode('层级x', contact['name'], contact['_id'], contact['gender']))
       }
 
       this.edges.push(this.createEdge(this.nodes[0], this.nodes[1]))
