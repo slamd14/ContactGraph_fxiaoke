@@ -14,10 +14,6 @@
 </template>
 
 <script>
-/**
- * TODO:
- * 1. 自定义控制器获取 联系人 对象数据
- */
 export default {
   name: "X6TestForPaaS",
   data() {
@@ -56,9 +52,6 @@ export default {
       }
     })
   },
-  // beforeDestroy() {
-  //   location.reload()
-  // },
   methods: {
     /**
      * 令加载进度条消失
@@ -222,7 +215,7 @@ export default {
               {
                 tagName: 'text',
                 attrs: {
-                  class: 'rank',
+                  class: 'department',
                 },
               },
               {
@@ -272,7 +265,7 @@ export default {
                 opacity: 0.7,
                 cursor: 'pointer'
               },
-              '.rank': {
+              '.department': {
                 refX: 0.95,
                 refY: 0.5,
                 fill: '#fff',
@@ -354,29 +347,45 @@ export default {
       let that = this
       this.graph.on('node:add', ({ e, node }) => {
         e.stopPropagation()
-        const member = that.createNode(
-            'Employee',
-            'New Employee',
-            Math.random() < 0.5 ? this.male : this.female,
-        )
-        that.graph.freeze()
-        that.graph.addCell([member, that.createEdge(node, member)])
-        that.layout()
-        console.log('点击加号')
+
+        // TODO 创建新节点
+        let nodeData = node['data']['contactAllData']
+        // 1. PaaS平台弹出新建联系人对象弹框
+        FxUI.objectUIAction.addObject('ContactObj', {
+          objectData: {
+            'field_Jl19V__c': true,
+            "introducer": nodeData['_id'],
+            "introducer__r": nodeData['name'], // 查找关联字段不仅要填id， name也必须要填写
+          },
+          recordType: 'default__c',
+          showType: 'full'
+        }).then(res => {
+          let newContact = res['Value']['objectData']
+          // 2. 获取新建结果
+          // 3. UI创建新节点
+          const member = that.createNode(newContact['department'], newContact['name'], newContact['_id'], newContact['gender'], newContact)
+          that.graph.freeze()
+
+          // 新节点作为原节点的子节点, 创建边
+          that.graph.addCell([member, that.createEdge(node, member)])
+          that.layout()
+        }).catch(err => {
+          // handle error
+        })
       })
     },
     // 创建节点
-    createNode(rank, name, contactId, gender, contactAllData) {
+    createNode(department, name, contactId, gender, contactAllData) {
       let that = this
       return this.graph.createNode({
         shape: 'org-node',
         attrs: {
           '.image': { xlinkHref: gender === '1' ? that.male : that.female },
-          '.rank': {
-            text: that.Dom.breakText(rank, { width: 160, height: 45 }),
+          '.department': {
+            text: that.Dom.breakText('部门: ' + department, { width: 160, height: 45 }),
           },
           '.name': {
-            text: that.Dom.breakText(name, { width: 160, height: 45 }),
+            text: that.Dom.breakText('姓名: ' + name, { width: 160, height: 45 }),
           },
         },
         data: {
@@ -424,15 +433,13 @@ export default {
         },
       })
 
-      // TODO 对联系人对象列表是数据进行树状化 solveData
-      // TODO 构建联系人节点
-      // TODO 构建联系人关系
       for (let contact of this.rawObjData) {
-        this.nodes.push(this.createNode('层级x', contact['name'], contact['_id'], contact['gender'], contact))
+        this.nodes.push(this.createNode(contact['department'], contact['name'], contact['_id'], contact['gender'], contact))
       }
 
       console.log('当前各个节点为: ', this.nodes)
 
+      // 依据介绍人构建节点上下级关系
       for (let node of this.nodes) {
         let curIntroducer = (node['data']['contactAllData']['introducer'] == null) ? '' : node['data']['contactAllData']['introducer']
         if (curIntroducer === '') {
@@ -443,30 +450,6 @@ export default {
         this.edges.push(this.createEdge(parentNode, node))
       }
 
-      // this.edges.push(this.createEdge(this.nodes[0], this.nodes[1]))
-      // this.edges.push(this.createEdge(this.nodes[1], this.nodes[2]))
-      // this.edges.push(this.createEdge(this.nodes[1], this.nodes[3]))
-      // this.edges.push(this.createEdge(this.nodes[1], this.nodes[4]))
-      // this.edges.push(this.createEdge(this.nodes[1], this.nodes[5]))
-
-      // const nodes = [
-      //   this.createNode('Founder & Chairman', 'Pierre Omidyar', this.male),
-      //   this.createNode('President & CEO', 'Margaret C. Whitman', this.female),
-      //   this.createNode('President, PayPal', 'Scott Thompson', this.male),
-      //   this.createNode('President, Ebay Global Marketplaces', 'Devin Wenig', this.male),
-      //   this.createNode('Senior Vice President Human Resources', 'Jeffrey S. Skoll', this.male),
-      //   this.createNode('Senior Vice President Controller', 'Steven P. Westly', this.male),
-      // ]
-
-      // const edges = [
-      //   this.createEdge(nodes[0], nodes[1]),
-      //   this.createEdge(nodes[1], nodes[2]),
-      //   this.createEdge(nodes[1], nodes[3]),
-      //   this.createEdge(nodes[1], nodes[4]),
-      //   this.createEdge(nodes[1], nodes[5]),
-      // ]
-      // 画布显示
-      // this.graph.resetCells([...nodes, ...edges])
       this.graph.resetCells([...this.nodes, ...this.edges])
       this.layout()
       this.graph.zoomTo(0.8)
