@@ -435,6 +435,12 @@ export default {
         shape: 'org-edge',
         source: { cell: source.id },
         target: { cell: target.id },
+        attrs: {
+          line: { // 箭头
+            targetMarker: 'block',
+            strokeWidth: 1
+          },
+        }
       })
     },
     // 返回id为introducerId的节点
