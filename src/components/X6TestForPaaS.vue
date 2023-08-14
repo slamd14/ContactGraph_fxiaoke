@@ -34,9 +34,12 @@ export default {
       dir: 'TB', // 布局方向 LR RL TB BT
 
       rawObjData: {}, // 初始线性数据
+
+      curObjId: '', // 当前(客户)对象id
     }
   },
   mounted() {
+    this.fetchData()
     // 创建一个用于容纳X6绘制的图的容器
     let divNode = document.createElement('div')
     divNode.setAttribute('id', 'container')
@@ -54,6 +57,13 @@ export default {
     })
   },
   methods: {
+
+    // 如果该组件配置在对象详情页，那么获取当前对象id
+    fetchData() {
+      this.curObjId = this.$context.getDescribe()['_id']
+      console.log('当前客户idwei ', this.curObjId)
+    },
+
     /**
      * 令加载进度条消失
      * @param el: 进度条dom元素
@@ -497,8 +507,8 @@ export default {
       // 初始化画布对象
       this.graph = new this.Graph({
         container: document.getElementById('container'),
-        width: 1600,
-        height: 800,
+        width: 1150,
+        height: 850,
         background: {
           color: '#fff8f8'
         },
@@ -536,7 +546,7 @@ export default {
 
       this.graph.resetCells([...this.nodes, ...this.edges])
       this.layout()
-      this.graph.zoomTo(0.8)
+      this.graph.zoomTo(0.5)
       this.graph.centerContent()
       this.setup()
     }
