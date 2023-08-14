@@ -64,7 +64,6 @@ export default {
     })
   },
   methods: {
-
     // 如果该组件配置在对象详情页，那么获取当前对象id
     fetchData() {
       this.curObjId = this.$context.getData()['_id']
