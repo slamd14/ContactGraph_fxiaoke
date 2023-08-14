@@ -122,7 +122,7 @@ export default {
       const edges = this.graph.getEdges()
       const g = new dagreD3.dagre.graphlib.Graph()
       let that = this
-      g.setGraph({ rankdir: that.dir, nodesep: 50, ranksep: 50 }) // nodesep: 节点之间横向连线长度 rankesep: 节点之间纵向距离长度
+      g.setGraph({ rankdir: that.dir, nodesep: 100, ranksep: 250 }) // nodesep: 节点之间横向连线长度 rankesep: 节点之间纵向距离长度
       g.setDefaultEdgeLabel(() => ({}))
 
       const width = 260
@@ -438,11 +438,48 @@ export default {
         attrs: {
           line: { // 箭头
             targetMarker: 'block',
-            strokeWidth: 1
+            strokeWidth: 5,
+            stroke: 'black'
           },
-        }
+        },
+        labels: [
+          {
+            attrs: {
+              label: {
+                text: '介绍'
+              }
+            },
+            position: 0.5
+          },
+        ]
       })
     },
+
+    // createEdge2(source, target) { // TODO 测试其他关系线
+    //   return this.graph.createEdge({
+    //     shape: 'org-edge',
+    //     source: { cell: source.id },
+    //     target: { cell: target.id },
+    //     labels: [
+    //       {
+    //         attrs: {
+    //           label: {
+    //             text: '其他关系其他关系',
+    //             stroke: 'red'
+    //           },
+    //         },
+    //         position: 0.5
+    //       },
+    //     ],
+    //     attrs: {
+    //       line: {
+    //         strokeWidth: 5,
+    //         stroke: '#d500dc',
+    //       },
+    //     },
+    //   })
+    // },
+
     // 返回id为introducerId的节点
     getNodeByIntroducerId(introducerId) {
       for (let node of this.nodes) {
@@ -490,6 +527,12 @@ export default {
         let parentNode = this.getNodeByIntroducerId(curIntroducer)
         this.edges.push(this.createEdge(parentNode, node))
       }
+
+      // TODO 测试其他关系
+      // this.edges.push((this.createEdge2(this.nodes[11], this.nodes[12]))) // TODO 测试其他关系 小马与小猪
+      // this.edges.push((this.createEdge2(this.nodes[1], this.nodes[7]))) // TODO 测试其他关系 小黑与小红
+      // this.edges.push((this.createEdge2(this.nodes[7], this.nodes[6]))) // TODO 测试其他关系 小红与小绿
+      // this.edges.push((this.createEdge2(this.nodes[10], this.nodes[8]))) // TODO 测试其他关系 小羊和小明
 
       this.graph.resetCells([...this.nodes, ...this.edges])
       this.layout()
