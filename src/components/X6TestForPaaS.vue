@@ -39,15 +39,22 @@ export default {
     }
   },
   mounted() {
+    // 获取客户对象id
     this.fetchData()
+
     // 创建一个用于容纳X6绘制的图的容器
     let divNode = document.createElement('div')
     divNode.setAttribute('id', 'container')
     divNode.setAttribute('style', 'margin: 0 auto')
     document.querySelector("[class='test']").appendChild(divNode)
 
+    let parameters = [{
+      type: 'string',
+      name: 'objId',
+      value: this.curObjId
+    }]
     // 获取联系人对象列表数据
-    FxUI.userDefine.call_controller('getContactInGraph__c').then((res) => {
+    FxUI.userDefine.call_controller('getContactInGraph__c', parameters).then((res) => {
       if (res.Result.StatusCode === 0) {
         this.rawObjData = res.Value.functionResult.dataList
         console.log('联系人对象列表数据为: ', this.rawObjData)
@@ -60,8 +67,7 @@ export default {
 
     // 如果该组件配置在对象详情页，那么获取当前对象id
     fetchData() {
-      this.curObjId = this.$context.getDescribe()['_id']
-      console.log('当前客户idwei ', this.curObjId)
+      this.curObjId = this.$context.getData()['_id']
     },
 
     /**
@@ -497,6 +503,7 @@ export default {
         if (curContactId === introducerId)
           return node
       }
+      return null
     },
     // 绘图
     async draw() {
@@ -535,7 +542,9 @@ export default {
           continue
         }
         let parentNode = this.getNodeByIntroducerId(curIntroducer)
-        this.edges.push(this.createEdge(parentNode, node))
+        if (parentNode != null) { // 有介绍人，但是该介绍人没有关联当前客户
+          this.edges.push(this.createEdge(parentNode, node))
+        }
       }
 
       // TODO 测试其他关系
