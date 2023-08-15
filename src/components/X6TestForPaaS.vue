@@ -1,6 +1,9 @@
 <template>
   <div class="test">
     <div class="describe">联系人之间的关系线代表介绍关系</div>
+    <div class="controlScreen">
+      <fx-button type="primary" round @click="toFullScreen">全屏显示</fx-button>
+    </div>
     <!-- 页面加载进度条 -->
     <div class="loading_bg">
       <div class="jiazai_div">
@@ -65,6 +68,10 @@ export default {
     })
   },
   methods: {
+    // 全屏展示
+    toFullScreen() {
+      document.getElementById('container').requestFullscreen()
+    },
     // 如果该组件配置在对象详情页，那么获取当前对象id
     fetchData() {
       this.curObjId = this.$context.getData()['_id']
@@ -216,7 +223,7 @@ export default {
           'org-node',
           {
             width: 260,
-            height: 88,
+            height: 160,
             markup: [
               {
                 tagName: 'rect',
@@ -241,6 +248,18 @@ export default {
                 attrs: {
                   class: 'name',
                 },
+              },
+              {
+                tagName: 'text',
+                attrs: {
+                  class: 'job_title'
+                }
+              },
+              {
+                tagName: 'text',
+                attrs: {
+                  class: 'relationship'
+                }
               },
               {
                 tagName: 'g',
@@ -269,23 +288,23 @@ export default {
                 ry: 10,
                 refWidth: '100%',
                 refHeight: '100%',
-                fill: '#d86500',
-                stroke: '#d86500',
+                fill: '#fd7f00',
+                stroke: '#fd7f00',
                 strokeWidth: 1,
                 pointerEvents: 'visiblePainted',
                 cursor: 'pointer'
               },
               '.image': {
                 x: 16,
-                y: 8,
-                width: 72,
-                height: 72,
+                y: 32,
+                width: 100,
+                height: 100,
                 opacity: 0.7,
                 cursor: 'pointer'
               },
               '.department': {
                 refX: 0.95,
-                refY: 0.5,
+                refY: 0.3,
                 fill: '#fff',
                 fontFamily: 'Arial',
                 fontSize: 16,
@@ -295,11 +314,31 @@ export default {
               },
               '.name': {
                 refX: 0.95,
+                refY: 0.5,
+                fill: '#fff',
+                fontFamily: 'Arial',
+                fontSize: 14,
+                fontWeight: '300',
+                textAnchor: 'end',
+                cursor: 'pointer'
+              },
+              '.job_title': {
+                refX: 0.95,
                 refY: 0.7,
                 fill: '#fff',
                 fontFamily: 'Arial',
                 fontSize: 14,
-                fontWeight: '600',
+                fontWeight: '300',
+                textAnchor: 'end',
+                cursor: 'pointer'
+              },
+              '.relationship': {
+                refX: 0.95,
+                refY: 0.9,
+                fill: '#fff',
+                fontFamily: 'Arial',
+                fontSize: 14,
+                fontWeight: '300',
                 textAnchor: 'end',
                 cursor: 'pointer'
               },
@@ -406,10 +445,17 @@ export default {
           attrs: {
             '.image': { xlinkHref: gender === '1' ? that.male : that.female },
             '.department': {
-              text: that.Dom.breakText('部门: ' + department, { width: 160, height: 45 }),
+              // text: that.Dom.breakText('部门: ' + department, { width: 160, height: 45 }),
+              text: that.Dom.breakText('公司: ' + department, { width: 160, height: 45 }),
             },
             '.name': {
               text: that.Dom.breakText('姓名: ' + name, { width: 160, height: 45 }),
+            },
+            '.job_title': {
+              text: that.Dom.breakText('职位: ' + contactAllData['job_title'], { width: 160, height: 45 }),
+            },
+            '.relationship': {
+              text: that.Dom.breakText('关系: ' + contactAllData['field_oRBqR__c'], { width: 160, height: 45 }),
             },
           },
           data: {
@@ -431,10 +477,17 @@ export default {
               attrs: {
                 '.image': { xlinkHref: fileUrl },
                 '.department': {
-                  text: that2.Dom.breakText('部门: ' + department, { width: 160, height: 45 }),
+                  // text: that2.Dom.breakText('部门: ' + department, { width: 160, height: 45 }),
+                  text: that2.Dom.breakText('公司: ' + department, { width: 160, height: 45 }),
                 },
                 '.name': {
                   text: that2.Dom.breakText('姓名: ' + name, { width: 160, height: 45 }),
+                },
+                '.job_title': {
+                  text: that2.Dom.breakText('职位: ' + contactAllData['job_title'], { width: 160, height: 45 }),
+                },
+                '.relationship': {
+                  text: that2.Dom.breakText('关系: ' + contactAllData['field_oRBqR__c'], { width: 160, height: 45 }),
                 },
               },
               data: {
@@ -569,11 +622,12 @@ export default {
       // this.edges.push((this.createEdge2(this.nodes[1], this.nodes[7]))) // TODO 测试其他关系 小黑与小红
       // this.edges.push((this.createEdge2(this.nodes[7], this.nodes[6]))) // TODO 测试其他关系 小红与小绿
       // this.edges.push((this.createEdge2(this.nodes[10], this.nodes[8]))) // TODO 测试其他关系 小羊和小明
-      this.edges.push((this.createEdge(this.nodes[0], this.nodes[1]))) // TODO 测试 3和2
-      this.edges.push((this.createEdge(this.nodes[0], this.nodes[2]))) // TODO 测试 3和1
+
+      // this.edges.push((this.createEdge(this.nodes[0], this.nodes[1]))) // TODO 测试 3和2
+      // this.edges.push((this.createEdge(this.nodes[0], this.nodes[2]))) // TODO 测试 3和1
       this.graph.resetCells([...this.nodes, ...this.edges])
       this.layout()
-      this.graph.zoomTo(0.5)
+      this.graph.zoomTo(0.6)
       this.graph.centerContent()
       this.setup()
     }
@@ -582,9 +636,14 @@ export default {
 </script>
 
 <style scoped>
+.controlScreen {
+  padding-top: 10px;
+  font-size: 20px;
+  margin-left: 10px;
+}
 .describe {
   padding-top: 20px;
-  margin: 0 10px 10px 20px;
+  margin: 0 10px 10px 10px;
   font-size: 20px;
 }
 /* 加载等待 */
