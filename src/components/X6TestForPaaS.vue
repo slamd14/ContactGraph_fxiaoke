@@ -36,6 +36,7 @@ export default {
       rawObjData: {}, // 初始线性数据
 
       curObjId: '', // 当前(客户)对象id
+      curObjName: '', // 当前(客户)对象name
     }
   },
   mounted() {
@@ -67,6 +68,7 @@ export default {
     // 如果该组件配置在对象详情页，那么获取当前对象id
     fetchData() {
       this.curObjId = this.$context.getData()['_id']
+      this.curObjName = this.$context.getData()['name']
     },
 
     /**
@@ -372,6 +374,8 @@ export default {
             'field_Jl19V__c': true,
             "introducer": nodeData['_id'],
             "introducer__r": nodeData['name'], // 查找关联字段不仅要填id， name也必须要填写
+            "account_id": that.curObjId,
+            "account_id__r": that.curObjName, // 查找关联字段不仅要填id， name也必须要填写
           },
           recordType: 'default__c',
           showType: 'full'
@@ -450,6 +454,20 @@ export default {
         shape: 'org-edge',
         source: { cell: source.id },
         target: { cell: target.id },
+        // router: { // TODO 边的路由
+        //   name: 'manhattan',
+        //   args: {
+        //     startDirections: ['top'],
+        //     endDirections: ['bottom'],
+        //   }
+        // },
+        // router: {
+        //   name: 'metro',
+        //   args: {
+        //     startDirections: ['top'],
+        //     endDirections: ['bottom'],
+        //   },
+        // },
         attrs: {
           line: { // 箭头
             targetMarker: 'block',
@@ -516,7 +534,7 @@ export default {
         width: 1150,
         height: 850,
         background: {
-          color: '#fff8f8'
+          color: '#fdfdfd'
         },
         interacting: false,
         panning: true, // 画布平移
@@ -551,7 +569,8 @@ export default {
       // this.edges.push((this.createEdge2(this.nodes[1], this.nodes[7]))) // TODO 测试其他关系 小黑与小红
       // this.edges.push((this.createEdge2(this.nodes[7], this.nodes[6]))) // TODO 测试其他关系 小红与小绿
       // this.edges.push((this.createEdge2(this.nodes[10], this.nodes[8]))) // TODO 测试其他关系 小羊和小明
-
+      this.edges.push((this.createEdge(this.nodes[0], this.nodes[1]))) // TODO 测试 3和2
+      this.edges.push((this.createEdge(this.nodes[0], this.nodes[2]))) // TODO 测试 3和1
       this.graph.resetCells([...this.nodes, ...this.edges])
       this.layout()
       this.graph.zoomTo(0.5)
