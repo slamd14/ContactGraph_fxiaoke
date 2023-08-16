@@ -40,6 +40,8 @@ export default {
 
       curObjId: '', // 当前(客户)对象id
       curObjName: '', // 当前(客户)对象name
+
+      isFullScreen: false, // 是否全屏
     }
   },
   mounted() {
@@ -71,6 +73,7 @@ export default {
     // 全屏展示
     toFullScreen() {
       document.getElementById('container').requestFullscreen()
+      this.isFullScreen = true
     },
     // 如果该组件配置在对象详情页，那么获取当前对象id
     fetchData() {
@@ -146,7 +149,7 @@ export default {
       const edges = this.graph.getEdges()
       const g = new dagreD3.dagre.graphlib.Graph()
       let that = this
-      g.setGraph({ rankdir: that.dir, nodesep: 100, ranksep: 250 }) // nodesep: 节点之间横向连线长度 rankesep: 节点之间纵向距离长度
+      g.setGraph({ rankdir: that.dir, nodesep: 200, ranksep: 250 }) // nodesep: 节点之间横向连线长度 rankesep: 节点之间纵向距离长度
       g.setDefaultEdgeLabel(() => ({}))
 
       const width = 260
@@ -222,8 +225,8 @@ export default {
       this.Graph.registerNode(
           'org-node',
           {
-            width: 260,
-            height: 160,
+            width: 400,
+            height: 180,
             markup: [
               {
                 tagName: 'rect',
@@ -296,7 +299,7 @@ export default {
               },
               '.image': {
                 x: 16,
-                y: 32,
+                y: 40,
                 width: 100,
                 height: 100,
                 opacity: 0.7,
@@ -307,17 +310,17 @@ export default {
                 refY: 0.3,
                 fill: '#fff',
                 fontFamily: 'Arial',
-                fontSize: 16,
+                fontSize: 26,
                 textAnchor: 'end',
                 textVerticalAnchor: 'middle',
                 cursor: 'pointer'
               },
               '.name': {
                 refX: 0.95,
-                refY: 0.5,
+                refY: 0.55,
                 fill: '#fff',
                 fontFamily: 'Arial',
-                fontSize: 14,
+                fontSize: 20,
                 fontWeight: '300',
                 textAnchor: 'end',
                 cursor: 'pointer'
@@ -327,17 +330,17 @@ export default {
                 refY: 0.7,
                 fill: '#fff',
                 fontFamily: 'Arial',
-                fontSize: 14,
+                fontSize: 20,
                 fontWeight: '300',
                 textAnchor: 'end',
                 cursor: 'pointer'
               },
               '.relationship': {
                 refX: 0.95,
-                refY: 0.9,
+                refY: 0.85,
                 fill: '#fff',
                 fontFamily: 'Arial',
-                fontSize: 14,
+                fontSize: 20,
                 fontWeight: '300',
                 textAnchor: 'end',
                 cursor: 'pointer'
@@ -396,6 +399,11 @@ export default {
       this.graph.on('node:click', ({ e, x, y, cell, view }) => {
         // console.log('当前点击的联系人的id为: ', cell['data']['contactId'])
         console.log('当前点击的联系人的所有数据为: ', cell['data']['contactAllData'])
+        // 如果是全屏状态则关闭全屏
+        if (this.isFullScreen) {
+          document.exitFullscreen()
+          this.isFullScreen = false
+        }
         FxUI.objectUIAction.viewObject('ContactObj', cell['data']['contactId'])
       })
     },
@@ -532,7 +540,8 @@ export default {
           {
             attrs: {
               label: {
-                text: '介绍'
+                text: '介绍',
+                fontSize: 30
               }
             },
             position: 0.5
@@ -627,7 +636,7 @@ export default {
       // this.edges.push((this.createEdge(this.nodes[0], this.nodes[2]))) // TODO 测试 3和1
       this.graph.resetCells([...this.nodes, ...this.edges])
       this.layout()
-      this.graph.zoomTo(0.6)
+      this.graph.zoomTo(0.4)
       this.graph.centerContent()
       this.setup()
     }
