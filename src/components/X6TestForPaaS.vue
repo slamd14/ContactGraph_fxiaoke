@@ -412,6 +412,11 @@ export default {
       let that = this
       this.graph.on('node:add', ({ e, node }) => {
         e.stopPropagation()
+        // 如果是全屏状态则关闭全屏
+        if (this.isFullScreen) {
+          document.exitFullscreen()
+          this.isFullScreen = false
+        }
 
         // TODO 创建新节点
         let nodeData = node['data']['contactAllData']
